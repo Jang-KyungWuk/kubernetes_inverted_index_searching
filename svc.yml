@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: Service
+metadata: 
+  name: svc-cluster
+spec:
+  ports: 
+    - name: web-port
+      port: 6000
+      targetPort: 5000
+      nodePort: 30101 # port forward?
+  selector: 
+    app: svc-test
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-deploy
+  labels:
+    app: svc-test
+    test: test
+  annotations:
+    fluxcd.io/tag.svc-test: semver:~1.0
+    fluxcd.io/automated: 'true'
+spec:
+  selector:
+    matchLabels:
+      app: svc-test
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: svc-test
+    spec:
+      containers:
+      - name: svc-test
+        image: test_flask_image:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+      tolerations:
+      - key: "cattle.io/os"
+        value: "linux"
+        effect: "NoSchedule"
