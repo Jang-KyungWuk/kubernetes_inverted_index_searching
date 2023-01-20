@@ -13,3 +13,5 @@ add text by http://host.docker.internal:30101/w/<text>
 search text by http://host.docker.internal:30101/s/<text>
 
 search index by (not sorted) http://host.docker.internal:30101/sk/
+
+clear all by run executeremoveall.bat
